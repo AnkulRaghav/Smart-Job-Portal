@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Portal analytics</h1>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md"><div class="stat"><div class="stat-n">{{ stats.candidates }}</div>Candidates</div></div>
+  <div class="col-6 col-md"><div class="stat"><div class="stat-n">{{ stats.recruiters }}</div>Recruiters</div></div>
+  <div class="col-6 col-md"><div class="stat"><div class="stat-n">{{ stats.jobs }}</div>Jobs</div></div>
+  <div class="col-6 col-md"><div class="stat"><div class="stat-n">{{ stats.applications }}</div>Applications</div></div>
+  <div class="col-12 col-md"><div class="stat"><div class="stat-n">{{ stats.avg_score }}%</div>Avg match score</div></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-6"><div class="panel"><h2 class="h6">Applications per month</h2><canvas id="cMonths"></canvas></div></div>
+  <div class="col-lg-6"><div class="panel"><h2 class="h6">Most applied jobs</h2><canvas id="cTop"></canvas></div></div>
+  <div class="col-lg-6"><div class="panel"><h2 class="h6">Jobs by type</h2><canvas id="cTypes"></canvas></div></div>
+  <div class="col-lg-6"><div class="panel"><h2 class="h6">Application status</h2><canvas id="cStatus"></canvas></div></div>
+</div>
+{{ charts|json_script:"chart-data" }}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const d = JSON.parse(document.getElementById('chart-data').textContent);
+  const palette = ['#0f766e', '#e0a100', '#3b5bdb', '#c2410c', '#6b7280'];
+  const make = (id, type, c, label) => new Chart(document.getElementById(id), {
+    type,
+    data: { labels: c.labels, datasets: [{ label, data: c.data,
+      backgroundColor: type === 'line' ? 'rgba(15,118,110,.15)' : palette,
+      borderColor: '#0f766e', fill: type === 'line', tension: .3 }] },
+    options: { plugins: { legend: { display: type === 'doughnut' } },
+      scales: type === 'doughnut' ? {} : { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+  make('cMonths', 'line', d.months, 'Applications');
+  make('cTop', 'bar', d.top_jobs, 'Applications');
+  make('cTypes', 'doughnut', d.types, 'Jobs');
+  make('cStatus', 'doughnut', d.status, 'Applications');
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}My applications{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">My applications</h1>
+{% for a in applications %}
+<div class="panel mb-3">
+  <div class="row align-items-center g-3">
+    <div class="col-md-8">
+      <h2 class="h5 mb-0"><a href="{{ a.job.get_absolute_url }}">{{ a.job.title }}</a></h2>
+      <div class="text-muted">{{ a.job.company }} · applied {{ a.applied_at|date:"d M Y" }}</div>
+      <div class="mt-2">
+        {% for s in a.matched_list %}<span class="chip chip-ok">{{ s }}</span>{% endfor %}
+        {% for s in a.missing_list %}<span class="chip chip-miss">{{ s }}</span>{% endfor %}
+      </div>
+      {% if a.missing_list %}<div class="small text-muted mt-2">Red skills are missing from your resume. Learn them or add them if you already know them.</div>{% endif %}
+    </div>
+    <div class="col-md-2 text-center"><div class="score-big">{{ a.match_score }}%</div><div class="small text-muted">match</div></div>
+    <div class="col-md-2 text-md-end"><span class="status status-{{ a.status }}">{{ a.get_status_display }}</span></div>
+  </div>
+</div>
+{% empty %}
+<div class="empty">You have not applied anywhere yet. <a href="{% url 'job_list' %}">Browse jobs</a></div>
+{% endfor %}
+{% endblock %}

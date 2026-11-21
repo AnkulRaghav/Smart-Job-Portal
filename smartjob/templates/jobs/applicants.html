@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Applicants · {{ job.title }}{% endblock %}
+{% block content %}
+<a href="{% url 'recruiter_dashboard' %}" class="small">&larr; All jobs</a>
+<h1 class="h3 mb-1">Applicants for {{ job.title }}</h1>
+<p class="text-muted">Ranked by resume match score, best fit first. Required: {{ job.skills }}</p>
+{% for a in applications %}
+<div class="panel mb-3">
+  <div class="row g-3 align-items-center">
+    <div class="col-md-2 text-center"><div class="score-big">{{ a.match_score }}%</div><div class="small text-muted">match</div></div>
+    <div class="col-md-6">
+      <h2 class="h5 mb-0">{{ a.candidate.username }}</h2>
+      <div class="small text-muted">{{ a.candidate.email }} · applied {{ a.applied_at|date:"d M Y" }}</div>
+      <div class="mt-2">
+        {% for s in a.matched_list %}<span class="chip chip-ok">{{ s }}</span>{% endfor %}
+        {% for s in a.missing_list %}<span class="chip chip-miss">{{ s }}</span>{% endfor %}
+      </div>
+      {% if a.cover_note %}<div class="small mt-2">{{ a.cover_note|truncatechars:200 }}</div>{% endif %}
+    </div>
+    <div class="col-md-4">
+      <a class="btn btn-sm btn-outline-dark mb-2" href="{{ a.resume.url }}" target="_blank">Open resume</a>
+      <form method="post" class="d-flex gap-2">{% csrf_token %}
+        <input type="hidden" name="application_id" value="{{ a.pk }}">
+        <select name="status" class="form-select form-select-sm">
+          {% for value, label in a.STATUS_CHOICES %}<option value="{{ value }}" {% if a.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-sm btn-dark">Save</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="empty">No applications yet.</div>
+{% endfor %}
+{% endblock %}
